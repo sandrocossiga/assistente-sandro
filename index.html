@@ -6,101 +6,140 @@
   <title>Assistente Sandro</title>
   <style>
     body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
       margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #e5ddd5;
+      padding: 0;
       display: flex;
       flex-direction: column;
-      align-items: center;
       height: 100vh;
     }
     header {
       background-color: #0088cc;
       color: white;
-      width: 100%;
-      padding: 15px;
+      padding: 1rem;
       text-align: center;
-      font-size: 24px;
+      font-size: 1.5rem;
       font-weight: bold;
     }
     #chat {
       flex: 1;
-      width: 100%;
-      max-width: 600px;
-      padding: 10px;
+      padding: 1rem;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
     }
-    .message {
-      background-color: #ffffff;
-      border-radius: 15px;
-      padding: 10px 15px;
-      margin: 5px;
-      max-width: 70%;
+    .msg {
+      margin: 0.5rem 0;
+      max-width: 80%;
+      padding: 0.6rem;
+      border-radius: 10px;
     }
     .user {
       align-self: flex-end;
-      background-color: #dcf8c6;
+      background-color: #d0f0ff;
     }
     .bot {
       align-self: flex-start;
+      background-color: #e6e6e6;
     }
-    footer {
+    #form {
       display: flex;
-      width: 100%;
-      max-width: 600px;
-      padding: 10px;
-      box-sizing: border-box;
+      padding: 1rem;
+      border-top: 1px solid #ccc;
+      background-color: white;
     }
     input[type="text"] {
       flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 10px;
+      padding: 0.8rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
     }
     button {
+      padding: 0.8rem 1.2rem;
+      font-size: 1rem;
       background-color: #0088cc;
       color: white;
       border: none;
-      border-radius: 10px;
-      padding: 10px 20px;
-      margin-left: 10px;
+      border-radius: 5px;
+      margin-left: 0.5rem;
       cursor: pointer;
+    }
+    .loading {
+      font-style: italic;
+      color: #999;
+      padding: 0.5rem;
     }
   </style>
 </head>
 <body>
   <header>Assistente Sandro</header>
   <div id="chat"></div>
-  <footer>
-    <input type="text" id="userInput" placeholder="Scrivi un messaggio..." />
-    <button onclick="sendMessage()">Invia</button>
-  </footer>
+  <form id="form">
+    <input type="text" id="input" placeholder="Scrivi un messaggio..." autocomplete="off" required />
+    <button type="submit">Invia</button>
+  </form>
 
   <script>
-    const chat = document.getElementById("chat");
+    const form = document.getElementById('form');
+    const input = document.getElementById('input');
+    const chat = document.getElementById('chat');
 
-    function appendMessage(text, sender) {
-      const msg = document.createElement("div");
-      msg.className = `message ${sender}`;
+    const apiKey = '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';
+
+    const appendMessage = (text, className) => {
+      const msg = document.createElement('div');
+      msg.className = `msg ${className}`;
       msg.textContent = text;
       chat.appendChild(msg);
       chat.scrollTop = chat.scrollHeight;
     }
 
-    function sendMessage() {
-      const input = document.getElementById("userInput");
-      const text = input.value.trim();
-      if (!text) return;
-      appendMessage(text, "user");
-      input.value = "";
-
-      // Simula risposta bot
-      setTimeout(() => {
-        appendMessage("Sto pensando... (risposta bot simulata)", "bot");
-      }, 1000);
+    const appendLoading = () => {
+      const loading = document.createElement('div');
+      loading.className = 'loading';
+      loading.textContent = 'Assistente sta scrivendo...';
+      loading.id = 'loading';
+      chat.appendChild(loading);
+      chat.scrollTop = chat.scrollHeight;
     }
+
+    const removeLoading = () => {
+      const loading = document.getElementById('loading');
+      if (loading) chat.removeChild(loading);
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const message = input.value;
+      appendMessage(message, 'user');
+      input.value = '';
+      appendLoading();
+
+      try {
+        const res = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: 'gpt-4',
+            messages: [{ role: 'user', content: message }]
+          })
+        });
+
+        const data = await res.json();
+        removeLoading();
+        const reply = data.choices?.[0]?.message?.content || '[Risposta non disponibile]';
+        appendMessage(reply, 'bot');
+      } catch (err) {
+        removeLoading();
+        appendMessage('Errore durante la risposta. Riprova.', 'bot');
+        console.error(err);
+      }
+    });
   </script>
 </body>
 </html>
