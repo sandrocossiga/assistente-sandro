@@ -1,12 +1,106 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Assistente Sandro - Test</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assistente Sandro</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #e5ddd5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100vh;
+    }
+    header {
+      background-color: #0088cc;
+      color: white;
+      width: 100%;
+      padding: 15px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    #chat {
+      flex: 1;
+      width: 100%;
+      max-width: 600px;
+      padding: 10px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    .message {
+      background-color: #ffffff;
+      border-radius: 15px;
+      padding: 10px 15px;
+      margin: 5px;
+      max-width: 70%;
+    }
+    .user {
+      align-self: flex-end;
+      background-color: #dcf8c6;
+    }
+    .bot {
+      align-self: flex-start;
+    }
+    footer {
+      display: flex;
+      width: 100%;
+      max-width: 600px;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+    }
+    button {
+      background-color: #0088cc;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 20px;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+  </style>
 </head>
-<body style="text-align: center; font-family: sans-serif; margin-top: 100px;">
-  <h1>Web App Operativa</h1>
-  <p>Questa è una pagina di test pubblicata con GitHub Pages.</p>
+<body>
+  <header>Assistente Sandro</header>
+  <div id="chat"></div>
+  <footer>
+    <input type="text" id="userInput" placeholder="Scrivi un messaggio..." />
+    <button onclick="sendMessage()">Invia</button>
+  </footer>
+
+  <script>
+    const chat = document.getElementById("chat");
+
+    function appendMessage(text, sender) {
+      const msg = document.createElement("div");
+      msg.className = `message ${sender}`;
+      msg.textContent = text;
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function sendMessage() {
+      const input = document.getElementById("userInput");
+      const text = input.value.trim();
+      if (!text) return;
+      appendMessage(text, "user");
+      input.value = "";
+
+      // Simula risposta bot
+      setTimeout(() => {
+        appendMessage("Sto pensando... (risposta bot simulata)", "bot");
+      }, 1000);
+    }
+  </script>
 </body>
 </html>
