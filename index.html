@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Assistente Sandro</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f4f6f8;
+      background-color: #e5ddd5;
       margin: 0;
       padding: 0;
       display: flex;
@@ -17,128 +17,105 @@
     header {
       background-color: #0088cc;
       color: white;
-      padding: 1rem;
+      padding: 15px;
       text-align: center;
-      font-size: 1.5rem;
+      font-size: 22px;
       font-weight: bold;
     }
     #chat {
       flex: 1;
-      padding: 1rem;
+      padding: 10px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
     }
-    .msg {
-      margin: 0.5rem 0;
+    .message {
       max-width: 80%;
-      padding: 0.6rem;
+      margin: 5px;
+      padding: 10px;
       border-radius: 10px;
+      line-height: 1.4em;
     }
     .user {
+      background-color: #dcf8c6;
       align-self: flex-end;
-      background-color: #d0f0ff;
     }
     .bot {
+      background-color: #ffffff;
       align-self: flex-start;
-      background-color: #e6e6e6;
     }
-    #form {
+    form {
       display: flex;
-      padding: 1rem;
-      border-top: 1px solid #ccc;
-      background-color: white;
+      padding: 10px;
+      background-color: #f0f0f0;
     }
     input[type="text"] {
       flex: 1;
-      padding: 0.8rem;
-      font-size: 1rem;
+      padding: 10px;
+      border-radius: 20px;
       border: 1px solid #ccc;
-      border-radius: 5px;
+      outline: none;
     }
     button {
-      padding: 0.8rem 1.2rem;
-      font-size: 1rem;
+      margin-left: 10px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 20px;
       background-color: #0088cc;
       color: white;
-      border: none;
-      border-radius: 5px;
-      margin-left: 0.5rem;
       cursor: pointer;
-    }
-    .loading {
-      font-style: italic;
-      color: #999;
-      padding: 0.5rem;
     }
   </style>
 </head>
 <body>
   <header>Assistente Sandro</header>
   <div id="chat"></div>
-  <form id="form">
-    <input type="text" id="input" placeholder="Scrivi un messaggio..." autocomplete="off" required />
+  <form id="chat-form">
+    <input type="text" id="message" placeholder="Scrivi un messaggio..." required>
     <button type="submit">Invia</button>
   </form>
 
   <script>
-    const form = document.getElementById('form');
-    const input = document.getElementById('input');
     const chat = document.getElementById('chat');
+    const form = document.getElementById('chat-form');
+    const input = document.getElementById('message');
 
     const apiKey = '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';
 
-    const appendMessage = (text, className) => {
+    function addMessage(text, sender) {
       const msg = document.createElement('div');
-      msg.className = `msg ${className}`;
+      msg.className = `message ${sender}`;
       msg.textContent = text;
       chat.appendChild(msg);
       chat.scrollTop = chat.scrollHeight;
     }
 
-    const appendLoading = () => {
-      const loading = document.createElement('div');
-      loading.className = 'loading';
-      loading.textContent = 'Assistente sta scrivendo...';
-      loading.id = 'loading';
-      chat.appendChild(loading);
-      chat.scrollTop = chat.scrollHeight;
-    }
-
-    const removeLoading = () => {
-      const loading = document.getElementById('loading');
-      if (loading) chat.removeChild(loading);
-    }
-
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const message = input.value;
-      appendMessage(message, 'user');
+      const userMessage = input.value;
       input.value = '';
-      appendLoading();
+      addMessage(userMessage, 'user');
+      addMessage('Sto pensando...', 'bot');
 
-      try {
-        const res = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-          },
-          body: JSON.stringify({
-            model: 'gpt-4',
-            messages: [{ role: 'user', content: message }]
-          })
-        });
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'gpt-4',
+          messages: [
+            { role: 'system', content: 'Sei un assistente personale professionale e proattivo chiamato Assistente Sandro.' },
+            { role: 'user', content: userMessage }
+          ]
+        })
+      });
 
-        const data = await res.json();
-        removeLoading();
-        const reply = data.choices?.[0]?.message?.content || '[Risposta non disponibile]';
-        appendMessage(reply, 'bot');
-      } catch (err) {
-        removeLoading();
-        appendMessage('Errore durante la risposta. Riprova.', 'bot');
-        console.error(err);
-      }
+      const data = await response.json();
+      const reply = data.choices?.[0]?.message?.content || 'Errore nella risposta del bot.';
+      const botMessages = document.querySelectorAll('.bot');
+      botMessages[botMessages.length - 1].textContent = reply;
     });
   </script>
 </body>
