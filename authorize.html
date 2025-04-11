@@ -2,58 +2,30 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Autorizza Assistente Sandro</title>
+  <title>Autorizzazione Assistente Sandro</title>
 </head>
 <body>
-  <h2>🔐 Autorizza il tuo Account Google per Assistente Sandro</h2>
-  <p>Carica qui il file <strong>client_secret_....json</strong> scaricato da Google Cloud Console:</p>
+  <h2>🔐 Autorizza il tuo Account Google</h2>
+  <p>Clicca il pulsante qui sotto per avviare la procedura:</p>
 
-  <input type="file" id="credentialsFile" accept=".json"><br><br>
-  <button onclick="startAuth()">Autorizza</button>
+  <button onclick="avviaAutorizzazione()">Autorizza con Google</button>
 
-  <script type="module">
-    import { authenticate } from "https://cdn.jsdelivr.net/npm/@google-cloud/local-auth@2.1.1/browser/index.js";
-    import { google } from "https://cdn.jsdelivr.net/npm/googleapis@131.0.0/+esm";
+  <script>
+    function avviaAutorizzazione() {
+      const clientId = "752780390290-9fnuinnvvb1aps3lr1tkgq14c9p83389.apps.googleusercontent.com";
+      const redirectUri = "urn:ietf:wg:oauth:2.0:oob";
+      const scope = [
+        "https://www.googleapis.com/auth/drive",
+        "https://www.googleapis.com/auth/documents",
+        "https://www.googleapis.com/auth/calendar",
+        "https://www.googleapis.com/auth/gmail.send",
+        "https://www.googleapis.com/auth/userinfo.email"
+      ].join(' ');
 
-    window.startAuth = async () => {
-      const fileInput = document.getElementById('credentialsFile');
-      if (!fileInput.files[0]) {
-        alert('Carica il file JSON delle credenziali.');
-        return;
-      }
+      const url = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=${encodeURIComponent(scope)}&access_type=offline&prompt=consent`;
 
-      const file = fileInput.files[0];
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        try {
-          const credentials = JSON.parse(event.target.result);
-
-          const auth = await authenticate({
-            keyfile: credentials,
-            scopes: [
-              'https://www.googleapis.com/auth/drive',
-              'https://www.googleapis.com/auth/documents',
-              'https://www.googleapis.com/auth/calendar',
-              'https://www.googleapis.com/auth/gmail.send',
-              'https://www.googleapis.com/auth/userinfo.email'
-            ]
-          });
-
-          const token = auth.credentials;
-          const blob = new Blob([JSON.stringify(token, null, 2)], { type: 'application/json' });
-          const link = document.createElement('a');
-          link.href = URL.createObjectURL(blob);
-          link.download = 'token.json';
-          link.click();
-
-          alert("✅ Token salvato con successo. Caricalo ora nel backend.");
-        } catch (err) {
-          console.error(err);
-          alert("❌ Errore durante l'autenticazione");
-        }
-      };
-      reader.readAsText(file);
-    };
+      window.open(url, '_blank');
+    }
   </script>
 </body>
 </html>
