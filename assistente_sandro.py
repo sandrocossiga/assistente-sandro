@@ -6,6 +6,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 import io
+import base64
 
 app = FastAPI()
 
@@ -153,3 +154,4 @@ async def smart_menu():
             "save_note"
         ]
     }
+
