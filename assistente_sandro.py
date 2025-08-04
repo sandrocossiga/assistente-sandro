@@ -58,18 +58,19 @@ class EmailData(BaseModel):
 async def send_email(email: EmailData):
     creds = get_credentials()
     service = build('gmail', 'v1', credentials=creds)
-    message = (
-        f"From: me
-"
-        f"To: {email.to}
-"
-        f"Subject: {email.subject}
 
-"
+    # Costruzione corretta del messaggio
+    message_text = (
+        f"From: me\r\n"
+        f"To: {email.to}\r\n"
+        f"Subject: {email.subject}\r\n"
+        "\r\n"
         f"{email.body}"
     )
-    encoded = {'raw': base64.urlsafe_b64encode(message.encode()).decode()}
-    sent = service.users().messages().send(userId='me', body=encoded).execute()
+    raw_message = base64.urlsafe_b64encode(message_text.encode()).decode()
+    body = {'raw': raw_message}
+
+    sent = service.users().messages().send(userId='me', body=body).execute()
     return {"status": "Email inviata", "id": sent.get('id')}
 
 class DocData(BaseModel):
