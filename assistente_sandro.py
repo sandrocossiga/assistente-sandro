@@ -141,6 +141,36 @@ async def save_note(note: NoteData):
     created = service.notes().create(body=body).execute()
     return {"status": "Nota salvata", "id": created.get('id')}
 
+@app.post("/list_events")
+async def list_events():
+    creds = get_credentials()
+    service = build('calendar', 'v3', credentials=creds)
+
+    now = datetime.utcnow().isoformat() + 'Z'
+    tomorrow = (datetime.utcnow() + timedelta(days=1)).isoformat() + 'Z'
+
+    events_result = service.events().list(
+        calendarId='primary',
+        timeMin=now,
+        timeMax=tomorrow,
+        maxResults=10,
+        singleEvents=True,
+        orderBy='startTime'
+    ).execute()
+    
+    events = events_result.get('items', [])
+    parsed_events = []
+    for e in events:
+        parsed_events.append({
+            "title": e.get("summary"),
+            "start": e["start"].get("dateTime", e["start"].get("date")),
+            "end": e["end"].get("dateTime", e["end"].get("date"))
+        })
+    
+    return {"events": parsed_events}
+
+
+
 @app.get("/smart_menu")
 async def smart_menu():
     return {
@@ -154,6 +184,7 @@ async def smart_menu():
             "save_note"
         ]
     }
+
 
 
 
