@@ -181,9 +181,11 @@ async def smart_menu():
             "update_sheet",
             "upload_file",
             "add_task",
-            "save_note"
+            "save_note",
+            "list_events"
         ]
     }
+
 
 
 
